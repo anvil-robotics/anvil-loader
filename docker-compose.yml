@@ -1,0 +1,139 @@
+x-env-loader: &env-loader
+  env_file:
+    - .env.config
+
+services:
+  ros2:
+    image: us-docker.pkg.dev/practical-cider-485717-k0/prod-images/ros2:1.0.0
+    <<: *env-loader
+    platform: linux/amd64
+    environment:
+      - INFLUXDB_URL=http://host.docker.internal:8086
+      - INFLUXDB_ORG=anvil
+      - INFLUXDB_BUCKET=workcell
+      - INFLUXDB_TOKEN=anvil-workcell
+      - INFLUXDB_CLOUD_URL
+      - INFLUXDB_CLOUD_ORG
+      - INFLUXDB_CLOUD_BUCKET
+      - INFLUXDB_CLOUD_TOKEN
+      - WEBAPP_URL=http://127.0.0.1:3000
+    volumes:
+      - ./config:/config
+      - ./data:/data
+      - /etc/machine-id:/etc/machine-id:ro
+      - ./.android:/root/.android
+      - /run/cameras:/run/cameras:ro
+    privileged: true
+    network_mode: host
+    depends_on:
+      fluent-bit:
+        condition: service_healthy
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    restart: unless-stopped
+    stop_signal: SIGINT
+
+  webapps:
+    image: us-docker.pkg.dev/practical-cider-485717-k0/prod-images/webapps:1.0.0
+    <<: *env-loader
+    ports:
+      - 3000:3000
+    environment:
+      - VERSION=1.0.0
+      - NODE_ENV=production
+      - DATA_DIR=/data
+      - MIGRATIONS_FOLDER=/app/migrations
+      - ROS_WS_ENDPOINT=ws://host.docker.internal:9090
+    volumes:
+      - ./data:/data
+      - /etc/machine-id:/etc/machine-id:ro
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    networks:
+      - workcell-network
+    depends_on:
+      fluent-bit:
+        condition: service_healthy
+      ros2:
+        condition: service_started
+    restart: unless-stopped
+
+  influxdb:
+    image: influxdb:2.7-alpine
+    ports:
+      - 8086:8086
+    volumes:
+      - ./data/influxdb:/var/lib/influxdb2
+    environment:
+      - DOCKER_INFLUXDB_INIT_MODE=setup
+      - DOCKER_INFLUXDB_INIT_USERNAME=anvil
+      - DOCKER_INFLUXDB_INIT_PASSWORD=anvil-workcell
+      - DOCKER_INFLUXDB_INIT_ORG=anvil
+      - DOCKER_INFLUXDB_INIT_BUCKET=workcell
+      - DOCKER_INFLUXDB_INIT_RETENTION=30d
+      - DOCKER_INFLUXDB_INIT_ADMIN_TOKEN=anvil-workcell
+    networks:
+      - workcell-network
+    restart: unless-stopped
+
+  telegraf:
+    image: us-docker.pkg.dev/practical-cider-485717-k0/prod-images/telegraf:1.0.0
+    <<: *env-loader
+    user: telegraf:444
+    privileged: true
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - /proc:/host/proc:ro
+      - /sys:/host/sys:ro
+      - /run/udev:/run/udev:ro
+      - /etc/machine-id:/etc/machine-id:ro
+    environment:
+      - HOST_PROC=/host/proc
+      - HOST_SYS=/host/sys
+      - ROS_WS_ENDPOINT=ws://host.docker.internal:9090
+      - INFLUXDB_URL=http://influxdb:8086
+      - INFLUXDB_ORG=anvil
+      - INFLUXDB_BUCKET=workcell
+      - INFLUXDB_TOKEN=anvil-workcell
+      - INFLUXDB_CLOUD_URL
+      - INFLUXDB_CLOUD_ORG
+      - INFLUXDB_CLOUD_BUCKET
+      - INFLUXDB_CLOUD_TOKEN
+    command: telegraf --config-directory /etc/telegraf/cloud.d
+    extra_hosts:
+      - host.docker.internal:host-gateway
+    networks:
+      - workcell-network
+    depends_on:
+      ros2:
+        condition: service_started
+    restart: unless-stopped
+
+  fluent-bit:
+    image: us-docker.pkg.dev/practical-cider-485717-k0/prod-images/fluent-bit:1.0.0
+    <<: *env-loader
+    ports:
+      - 2020:2020
+    volumes:
+      - /var/lib/docker/containers:/var/lib/docker/containers:ro
+      - /var/log:/var/log:ro
+      - ./data/fluent-bit:/data
+      - /etc/machine-id:/etc/machine-id:ro
+    environment:
+      - GRAFANA_LOKI_HOST
+      - GRAFANA_LOKI_USER
+      - GRAFANA_LOKI_API_KEY
+    command: /fluent-bit/bin/fluent-bit -c /fluent-bit/etc/fluent-bit-cloud.conf
+    networks:
+      - workcell-network
+    healthcheck:
+      test: [ "CMD", "/bin/wget", "-qO-", "http://localhost:2020/api/v1/health" ]
+      interval: 5s
+      timeout: 3s
+      retries: 3
+      start_period: 3s
+    restart: unless-stopped
+
+networks:
+  workcell-network:
+    driver: bridge

@@ -1,0 +1,24 @@
+# OpenArm followers Quest VR teleop
+
+arm_type: openarm
+control_mode: follower_arms_forward_position_control
+
+arms:
+  follower_l:
+    can_interface_name: follower_l
+    vr_controller: left
+    torque_scaling: [0.9, 0.9, 0.8, 1.0, 0.8, 0.8, 0.8, 1.0]
+    home_position: [0.0, -0.174, 0.0, 1.5708, 0.0, 0.0, 0.0, 0.045]
+    homing_kp: [20.0, 20.0, 20.0, 20.0, 5.0, 5.0, 5.0, 5.0]
+    homing_kd: [2.75, 2.5, 0.7, 0.4, 0.7, 0.6, 0.5, 0.1]
+    teleop_kp: [40.0, 40.0, 40.0, 40.0, 6.0, 7.0, 7.0, 4.5]
+    teleop_kd: [3.0, 3.0, 3.0, 3.0, 0.2, 0.2, 0.2, 0.2]
+  follower_r:
+    can_interface_name: follower_r
+    vr_controller: right
+    torque_scaling: [0.9, 0.9, 0.8, 1.0, 0.8, 0.8, 0.8, 1.0]
+    home_position: [0.0, 0.174, 0.0, 1.5708, 0.0, 0.0, 0.0, 0.045]
+    homing_kp: [20.0, 20.0, 20.0, 20.0, 5.0, 5.0, 5.0, 5.0]
+    homing_kd: [2.75, 2.5, 0.7, 0.4, 0.7, 0.6, 0.5, 0.1]
+    teleop_kp: [40.0, 40.0, 40.0, 40.0, 6.0, 7.0, 7.0, 4.5]
+    teleop_kd: [3.0, 3.0, 3.0, 3.0, 0.2, 0.2, 0.2, 0.2]

@@ -1,0 +1,24 @@
+# OpenYAM followers Quest VR teleop
+
+arm_type: openyam
+control_mode: follower_arms_forward_position_control
+
+arms:
+  follower_l:
+    can_interface_name: follower_l
+    vr_controller: left
+    torque_scaling: [1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0]
+    home_position: [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
+    homing_kp: [10.0, 10.0, 10.0, 5.0, 5.0, 5.0, 5.0]
+    homing_kd: [1.0, 1.0, 1.0, 0.5, 0.5, 0.5, 0.1]
+    teleop_kp: [60.0, 60.0, 60.0, 30.0, 12.0, 12.0, 8.0]
+    teleop_kd: [2.0, 2.0, 2.0, 1.0, 0.2, 0.2, 0.2]
+  follower_r:
+    can_interface_name: follower_r
+    vr_controller: right
+    torque_scaling: [1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0]
+    home_position: [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
+    homing_kp: [10.0, 10.0, 10.0, 5.0, 5.0, 5.0, 5.0]
+    homing_kd: [1.0, 1.0, 1.0, 0.5, 0.5, 0.5, 0.1]
+    teleop_kp: [60.0, 60.0, 60.0, 30.0, 12.0, 12.0, 8.0]
+    teleop_kd: [2.0, 2.0, 2.0, 1.0, 0.2, 0.2, 0.2]

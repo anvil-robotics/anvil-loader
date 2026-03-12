@@ -8,7 +8,7 @@ arms:
     can_interface_name: follower_l
     vr_controller: left
     torque_scaling: [1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0]
-    home_position: [0.0, 0.873, 0.873, -0.698, 0.0, 0.0, 0.044]
+    home_positions: [0.0, 0.873, 0.873, -0.698, 0.0, 0.0, 0.044]
     homing_kp: [10.0, 10.0, 10.0, 5.0, 5.0, 5.0, 5.0]
     homing_kd: [1.0, 1.0, 1.0, 0.5, 0.5, 0.5, 0.1]
     teleop_kp: [60.0, 60.0, 60.0, 30.0, 12.0, 12.0, 8.0]

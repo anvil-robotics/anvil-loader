@@ -72,6 +72,7 @@ services:
       - DOCKER_INFLUXDB_INIT_BUCKET=workcell
       - DOCKER_INFLUXDB_INIT_RETENTION=30d
       - DOCKER_INFLUXDB_INIT_ADMIN_TOKEN=anvil-workcell
+      - INFLUXD_LOG_LEVEL=warn
     networks:
       - workcell-network
     restart: unless-stopped
@@ -99,7 +100,7 @@ services:
       - INFLUXDB_CLOUD_ORG
       - INFLUXDB_CLOUD_BUCKET
       - INFLUXDB_CLOUD_TOKEN
-    command: telegraf --config-directory /etc/telegraf/cloud.d
+    command: telegraf --config-directory /etc/telegraf/cloud.d --quiet
     extra_hosts:
       - host.docker.internal:host-gateway
     networks:
@@ -123,7 +124,7 @@ services:
       - GRAFANA_LOKI_HOST
       - GRAFANA_LOKI_USER
       - GRAFANA_LOKI_API_KEY
-    command: /fluent-bit/bin/fluent-bit -c /fluent-bit/etc/fluent-bit-cloud.conf
+    command: /fluent-bit/bin/fluent-bit -q -c /fluent-bit/etc/fluent-bit-cloud.conf
     networks:
       - workcell-network
     healthcheck:

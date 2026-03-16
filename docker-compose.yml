@@ -4,7 +4,7 @@ x-env-loader: &env-loader
 
 services:
   ros2:
-    image: us-docker.pkg.dev/practical-cider-485717-k0/prod-images/ros2:1.0.0
+    image: us-docker.pkg.dev/practical-cider-485717-k0/prod-images/ros2:1.1.0
     <<: *env-loader
     platform: linux/amd64
     environment:
@@ -34,12 +34,12 @@ services:
     stop_signal: SIGINT
 
   webapps:
-    image: us-docker.pkg.dev/practical-cider-485717-k0/prod-images/webapps:1.0.0
+    image: us-docker.pkg.dev/practical-cider-485717-k0/prod-images/webapps:1.1.0
     <<: *env-loader
     ports:
       - 3000:3000
     environment:
-      - VERSION=1.0.0
+      - VERSION=1.1.0
       - NODE_ENV=production
       - DATA_DIR=/data
       - MIGRATIONS_FOLDER=/app/migrations
@@ -78,7 +78,7 @@ services:
     restart: unless-stopped
 
   telegraf:
-    image: us-docker.pkg.dev/practical-cider-485717-k0/prod-images/telegraf:1.0.0
+    image: us-docker.pkg.dev/practical-cider-485717-k0/prod-images/telegraf:1.1.0
     <<: *env-loader
     user: telegraf:444
     privileged: true
@@ -111,7 +111,7 @@ services:
     restart: unless-stopped
 
   fluent-bit:
-    image: us-docker.pkg.dev/practical-cider-485717-k0/prod-images/fluent-bit:1.0.0
+    image: us-docker.pkg.dev/practical-cider-485717-k0/prod-images/fluent-bit:1.1.0
     <<: *env-loader
     ports:
       - 2020:2020

@@ -1,4 +1,4 @@
-# OpenArm followers Quest VR teleop
+# OpenArm Quest VR teleop
 
 arm_type: openarm
 control_mode: follower_arms_forward_position_control
@@ -16,8 +16,10 @@ arms:
       0.0, -0.174, 0.0, 1.5708, 0.0, 0.0, 0.0, 0.045]
     homing_kp: [20.0, 20.0, 20.0, 20.0, 5.0, 5.0, 5.0, 5.0]
     homing_kd: [2.75, 2.5, 0.7, 0.4, 0.7, 0.6, 0.5, 0.1]
-    teleop_kp: [40.0, 40.0, 40.0, 40.0, 6.0, 7.0, 7.0, 4.5]
-    teleop_kd: [3.0, 3.0, 3.0, 3.0, 0.2, 0.2, 0.2, 0.2]
+    teleop_kp: [40.0, 40.0, 40.0, 40.0, 6.0, 7.0, 7.0, 0.1]
+    teleop_kd: [3.0, 3.0, 3.0, 3.0, 0.2, 0.2, 0.2, 0.04]
+    gripper_feedforward_torque: 0.8
+    gripper_error_threshold: 0.003
   follower_r:
     can_interface_name: follower_r
     vr_controller: right
@@ -30,5 +32,7 @@ arms:
       0.0, 0.174, 0.0, 1.5708, 0.0, 0.0, 0.0, 0.045]
     homing_kp: [20.0, 20.0, 20.0, 20.0, 5.0, 5.0, 5.0, 5.0]
     homing_kd: [2.75, 2.5, 0.7, 0.4, 0.7, 0.6, 0.5, 0.1]
-    teleop_kp: [40.0, 40.0, 40.0, 40.0, 6.0, 7.0, 7.0, 4.5]
-    teleop_kd: [3.0, 3.0, 3.0, 3.0, 0.2, 0.2, 0.2, 0.2]
+    teleop_kp: [40.0, 40.0, 40.0, 40.0, 6.0, 7.0, 7.0, 0.1]
+    teleop_kd: [3.0, 3.0, 3.0, 3.0, 0.2, 0.2, 0.2, 0.04]
+    gripper_feedforward_torque: 0.8
+    gripper_error_threshold: 0.003

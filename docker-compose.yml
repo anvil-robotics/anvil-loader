@@ -2,10 +2,19 @@ x-env-loader: &env-loader
   env_file:
     - .env.config
 
+x-logging: &logging
+  logging:
+    driver: fluentd
+    options:
+      fluentd-address: localhost:24224
+      fluentd-async: "true"
+      tag: "docker.{{.Name}}"
+      fluentd-sub-second-precision: "true"
+
 services:
   ros2:
-    image: us-docker.pkg.dev/practical-cider-485717-k0/prod-images/ros2:1.1.0
-    <<: *env-loader
+    image: us-docker.pkg.dev/practical-cider-485717-k0/prod-images/ros2:1.1.3
+    <<: [*env-loader, *logging]
     platform: linux/amd64
     environment:
       - INFLUXDB_URL=http://host.docker.internal:8086
@@ -34,12 +43,12 @@ services:
     stop_signal: SIGINT
 
   webapps:
-    image: us-docker.pkg.dev/practical-cider-485717-k0/prod-images/webapps:1.1.0
-    <<: *env-loader
+    image: us-docker.pkg.dev/practical-cider-485717-k0/prod-images/webapps:1.1.3
+    <<: [*env-loader, *logging]
     ports:
       - 3000:3000
     environment:
-      - VERSION=1.1.0
+      - VERSION=1.1.3
       - NODE_ENV=production
       - DATA_DIR=/data
       - MIGRATIONS_FOLDER=/app/migrations
@@ -60,10 +69,14 @@ services:
 
   influxdb:
     image: influxdb:2.7-alpine
+    <<: *logging
     ports:
       - 8086:8086
     volumes:
       - ./data/influxdb:/var/lib/influxdb2
+    depends_on:
+      fluent-bit:
+        condition: service_healthy
     environment:
       - DOCKER_INFLUXDB_INIT_MODE=setup
       - DOCKER_INFLUXDB_INIT_USERNAME=anvil
@@ -78,8 +91,8 @@ services:
     restart: unless-stopped
 
   telegraf:
-    image: us-docker.pkg.dev/practical-cider-485717-k0/prod-images/telegraf:1.1.0
-    <<: *env-loader
+    image: us-docker.pkg.dev/practical-cider-485717-k0/prod-images/telegraf:1.1.3
+    <<: [*env-loader, *logging]
     user: telegraf:444
     privileged: true
     volumes:
@@ -106,17 +119,19 @@ services:
     networks:
       - workcell-network
     depends_on:
+      fluent-bit:
+        condition: service_healthy
       ros2:
         condition: service_started
     restart: unless-stopped
 
   fluent-bit:
-    image: us-docker.pkg.dev/practical-cider-485717-k0/prod-images/fluent-bit:1.1.0
+    image: us-docker.pkg.dev/practical-cider-485717-k0/prod-images/fluent-bit:1.1.3
     <<: *env-loader
     ports:
+      - 24224:24224
       - 2020:2020
     volumes:
-      - /var/lib/docker/containers:/var/lib/docker/containers:ro
       - /var/log:/var/log:ro
       - ./data/fluent-bit:/data
       - /etc/machine-id:/etc/machine-id:ro
@@ -125,6 +140,8 @@ services:
       - GRAFANA_LOKI_USER
       - GRAFANA_LOKI_API_KEY
     command: /fluent-bit/bin/fluent-bit -q -c /fluent-bit/etc/fluent-bit-cloud.conf
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
     networks:
       - workcell-network
     healthcheck:

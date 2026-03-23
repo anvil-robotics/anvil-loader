@@ -6,3 +6,5 @@ config/robot_description.urdf
 .env
 .env.provision
 !.env.config
+
+.android/*

@@ -50,14 +50,16 @@ printf '%s\n' "Writing ${ENV_TARGET}..."
 cat > "${ENV_TARGET}" <<EOF
 # Automatically generated — do not edit manually
 
+# Device
+DEVICE_NAME=${DEVICE_NAME:-}
+
 # Fluent Bit - Grafana Cloud Loki (Logs)
 GRAFANA_LOKI_HOST=${GRAFANA_LOKI_HOST:-}
 GRAFANA_LOKI_USER=${GRAFANA_LOKI_USER:-}
 GRAFANA_LOKI_API_KEY=${GRAFANA_LOKI_API_KEY:-}
 
-# Telegraf - InfluxDB Cloud (Metrics)
+# InfluxDB Cloud (Metrics)
 INFLUXDB_CLOUD_URL=${INFLUXDB_CLOUD_URL:-}
-INFLUXDB_CLOUD_ORG=${INFLUXDB_CLOUD_ORG:-}
 INFLUXDB_CLOUD_BUCKET=${INFLUXDB_CLOUD_BUCKET:-}
 INFLUXDB_CLOUD_TOKEN=${INFLUXDB_CLOUD_TOKEN:-}
 EOF

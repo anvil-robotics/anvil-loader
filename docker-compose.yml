@@ -13,7 +13,7 @@ x-logging: &logging
 
 services:
   ros2:
-    image: us-docker.pkg.dev/practical-cider-485717-k0/prod-images/ros2:1.1.7
+    image: us-docker.pkg.dev/practical-cider-485717-k0/prod-images/ros2:1.1.8
     <<: [*env-loader, *logging]
     platform: linux/amd64
     environment:
@@ -41,12 +41,12 @@ services:
     stop_signal: SIGINT
 
   webapps:
-    image: us-docker.pkg.dev/practical-cider-485717-k0/prod-images/webapps:1.1.7
+    image: us-docker.pkg.dev/practical-cider-485717-k0/prod-images/webapps:1.1.8
     <<: [*env-loader, *logging]
     ports:
       - 3000:3000
     environment:
-      - VERSION=1.1.7
+      - VERSION=1.1.8
       - NODE_ENV=production
       - DATA_DIR=/data
       - MIGRATIONS_FOLDER=/app/migrations
@@ -66,7 +66,7 @@ services:
     restart: unless-stopped
 
   influxdb:
-    image: us-docker.pkg.dev/practical-cider-485717-k0/prod-images/influxdb:1.1.7
+    image: us-docker.pkg.dev/practical-cider-485717-k0/prod-images/influxdb:1.1.8
     <<: *logging
     user: "0:0"
     ports:
@@ -86,7 +86,7 @@ services:
     restart: unless-stopped
 
   telegraf:
-    image: us-docker.pkg.dev/practical-cider-485717-k0/prod-images/telegraf:1.1.7
+    image: us-docker.pkg.dev/practical-cider-485717-k0/prod-images/telegraf:1.1.8
     <<: [*env-loader, *logging]
     user: telegraf:444
     privileged: true
@@ -116,7 +116,7 @@ services:
     restart: unless-stopped
 
   fluent-bit:
-    image: us-docker.pkg.dev/practical-cider-485717-k0/prod-images/fluent-bit:1.1.7
+    image: us-docker.pkg.dev/practical-cider-485717-k0/prod-images/fluent-bit:1.1.8
     <<: *env-loader
     ports:
       - 24224:24224
@@ -128,7 +128,7 @@ services:
       - .git:/repo-git:ro
     environment:
       - DEVICE_NAME
-      - VERSION=1.1.7
+      - VERSION=1.1.8
       - GRAFANA_LOKI_HOST
       - GRAFANA_LOKI_USER
       - GRAFANA_LOKI_API_KEY

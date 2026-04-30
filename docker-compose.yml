@@ -13,7 +13,7 @@ x-logging: &logging
 
 services:
   ros2:
-    image: us-docker.pkg.dev/practical-cider-485717-k0/prod-images/ros2:1.1.8
+    image: us-docker.pkg.dev/practical-cider-485717-k0/prod-images/ros2:1.1.14
     <<: [*env-loader, *logging]
     platform: linux/amd64
     environment:
@@ -22,12 +22,19 @@ services:
       - INFLUXDB_BUCKET=workcell
       - INFLUXDB_TOKEN=anvil-workcell
       - WEBAPP_URL=http://127.0.0.1:3000
+      - DEVICE_NAME
+      - VERSION=1.1.14
     volumes:
       - ./config:/config
       - ./data:/data
       - /etc/machine-id:/etc/machine-id:ro
+      - /etc/anvil-os-version:/etc/anvil-os-version:ro
+      - /etc/anvil-os-builder-commit:/etc/anvil-os-builder-commit:ro
+      - .git:/repo-git:ro
       - ./.android:/root/.android
       - /run/cameras:/run/cameras:ro
+    tmpfs:
+      - /anvil-tmp:size=5G
     privileged: true
     network_mode: host
     depends_on:
@@ -38,15 +45,19 @@ services:
     extra_hosts:
       - "host.docker.internal:host-gateway"
     restart: unless-stopped
+    post_start:
+      - command: /post_start.sh
+    pre_stop:
+      - command: /pre_stop.sh
     stop_signal: SIGINT
 
   webapps:
-    image: us-docker.pkg.dev/practical-cider-485717-k0/prod-images/webapps:1.1.8
+    image: us-docker.pkg.dev/practical-cider-485717-k0/prod-images/webapps:1.1.14
     <<: [*env-loader, *logging]
     ports:
       - 3000:3000
     environment:
-      - VERSION=1.1.8
+      - VERSION=1.1.14
       - NODE_ENV=production
       - DATA_DIR=/data
       - MIGRATIONS_FOLDER=/app/migrations
@@ -64,15 +75,20 @@ services:
       ros2:
         condition: service_started
     restart: unless-stopped
+    post_start:
+      - command: /post_start.sh
+    pre_stop:
+      - command: /pre_stop.sh
 
   influxdb:
-    image: us-docker.pkg.dev/practical-cider-485717-k0/prod-images/influxdb:1.1.8
+    image: us-docker.pkg.dev/practical-cider-485717-k0/prod-images/influxdb:1.1.14
     <<: *logging
     user: "0:0"
     ports:
       - 8086:8086
     volumes:
       - ./data/influxdb3:/var/lib/influxdb3
+      - /etc/machine-id:/etc/machine-id:ro
     depends_on:
       fluent-bit:
         condition: service_healthy
@@ -84,9 +100,13 @@ services:
     networks:
       - workcell-network
     restart: unless-stopped
+    post_start:
+      - command: /post_start.sh
+    pre_stop:
+      - command: /pre_stop.sh
 
   telegraf:
-    image: us-docker.pkg.dev/practical-cider-485717-k0/prod-images/telegraf:1.1.8
+    image: us-docker.pkg.dev/practical-cider-485717-k0/prod-images/telegraf:1.1.14
     <<: [*env-loader, *logging]
     user: telegraf:444
     privileged: true
@@ -96,6 +116,9 @@ services:
       - /sys:/host/sys:ro
       - /run/udev:/run/udev:ro
       - /etc/machine-id:/etc/machine-id:ro
+      - /etc/anvil-os-version:/etc/anvil-os-version:ro
+      - /etc/anvil-os-builder-commit:/etc/anvil-os-builder-commit:ro
+      - .git:/repo-git:ro
     environment:
       - HOST_PROC=/host/proc
       - HOST_SYS=/host/sys
@@ -104,6 +127,8 @@ services:
       - INFLUXDB_ORG=anvil
       - INFLUXDB_BUCKET=workcell
       - INFLUXDB_TOKEN=anvil-workcell
+      - DEVICE_NAME
+      - VERSION=1.1.14
     extra_hosts:
       - host.docker.internal:host-gateway
     networks:
@@ -114,9 +139,13 @@ services:
       influxdb:
         condition: service_started
     restart: unless-stopped
+    post_start:
+      - command: /post_start.sh
+    pre_stop:
+      - command: /pre_stop.sh
 
   fluent-bit:
-    image: us-docker.pkg.dev/practical-cider-485717-k0/prod-images/fluent-bit:1.1.8
+    image: us-docker.pkg.dev/practical-cider-485717-k0/prod-images/fluent-bit:1.1.14
     <<: *env-loader
     ports:
       - 24224:24224
@@ -125,10 +154,12 @@ services:
       - /var/log:/var/log:ro
       - ./data/fluent-bit:/data
       - /etc/machine-id:/etc/machine-id:ro
+      - /etc/anvil-os-version:/etc/anvil-os-version:ro
+      - /etc/anvil-os-builder-commit:/etc/anvil-os-builder-commit:ro
       - .git:/repo-git:ro
     environment:
       - DEVICE_NAME
-      - VERSION=1.1.8
+      - VERSION=1.1.14
       - GRAFANA_LOKI_HOST
       - GRAFANA_LOKI_USER
       - GRAFANA_LOKI_API_KEY
@@ -144,6 +175,10 @@ services:
       retries: 3
       start_period: 3s
     restart: unless-stopped
+    post_start:
+      - command: /post_start.sh
+    pre_stop:
+      - command: /pre_stop.sh
 
 networks:
   workcell-network:

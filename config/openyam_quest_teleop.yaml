@@ -11,8 +11,10 @@ arms:
     home_positions: [0.0, 0.873, 0.873, -0.698, 0.0, 0.0, 0.044]
     homing_kp: [10.0, 10.0, 10.0, 5.0, 5.0, 5.0, 5.0]
     homing_kd: [1.0, 1.0, 1.0, 0.5, 0.5, 0.5, 0.1]
-    teleop_kp: [60.0, 60.0, 60.0, 30.0, 12.0, 12.0, 8.0]
-    teleop_kd: [2.0, 2.0, 2.0, 1.0, 0.2, 0.2, 0.2]
+    teleop_kp: [60.0, 60.0, 60.0, 30.0, 12.0, 12.0, 0.1]
+    teleop_kd: [2.0, 2.0, 2.0, 1.0, 0.2, 0.2, 0.04]
+    gripper_feedforward_torque: 0.8
+    gripper_error_threshold: 0.003
   follower_r:
     can_interface_name: follower_r
     vr_controller: right
@@ -20,5 +22,7 @@ arms:
     home_positions: [0.0, 0.873, 0.873, -0.698, 0.0, 0.0, 0.044]
     homing_kp: [10.0, 10.0, 10.0, 5.0, 5.0, 5.0, 5.0]
     homing_kd: [1.0, 1.0, 1.0, 0.5, 0.5, 0.5, 0.1]
-    teleop_kp: [60.0, 60.0, 60.0, 30.0, 12.0, 12.0, 8.0]
-    teleop_kd: [2.0, 2.0, 2.0, 1.0, 0.2, 0.2, 0.2]
+    teleop_kp: [60.0, 60.0, 60.0, 30.0, 12.0, 12.0, 0.1]
+    teleop_kd: [2.0, 2.0, 2.0, 1.0, 0.2, 0.2, 0.04]
+    gripper_feedforward_torque: 0.8
+    gripper_error_threshold: 0.003

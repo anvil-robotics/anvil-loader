@@ -13,7 +13,7 @@ x-logging: &logging
 
 services:
   ros2:
-    image: us-docker.pkg.dev/practical-cider-485717-k0/prod-images/ros2:1.1.14
+    image: us-docker.pkg.dev/practical-cider-485717-k0/prod-images/ros2:1.1.16
     <<: [*env-loader, *logging]
     platform: linux/amd64
     environment:
@@ -23,7 +23,7 @@ services:
       - INFLUXDB_TOKEN=anvil-workcell
       - WEBAPP_URL=http://127.0.0.1:3000
       - DEVICE_NAME
-      - VERSION=1.1.14
+      - VERSION=1.1.16
     volumes:
       - ./config:/config
       - ./data:/data
@@ -52,12 +52,12 @@ services:
     stop_signal: SIGINT
 
   webapps:
-    image: us-docker.pkg.dev/practical-cider-485717-k0/prod-images/webapps:1.1.14
+    image: us-docker.pkg.dev/practical-cider-485717-k0/prod-images/webapps:1.1.16
     <<: [*env-loader, *logging]
     ports:
       - 3000:3000
     environment:
-      - VERSION=1.1.14
+      - VERSION=1.1.16
       - NODE_ENV=production
       - DATA_DIR=/data
       - MIGRATIONS_FOLDER=/app/migrations
@@ -81,7 +81,7 @@ services:
       - command: /pre_stop.sh
 
   influxdb:
-    image: us-docker.pkg.dev/practical-cider-485717-k0/prod-images/influxdb:1.1.14
+    image: us-docker.pkg.dev/practical-cider-485717-k0/prod-images/influxdb:1.1.16
     <<: *logging
     user: "0:0"
     ports:
@@ -106,7 +106,7 @@ services:
       - command: /pre_stop.sh
 
   telegraf:
-    image: us-docker.pkg.dev/practical-cider-485717-k0/prod-images/telegraf:1.1.14
+    image: us-docker.pkg.dev/practical-cider-485717-k0/prod-images/telegraf:1.1.16
     <<: [*env-loader, *logging]
     user: telegraf:444
     privileged: true
@@ -128,7 +128,7 @@ services:
       - INFLUXDB_BUCKET=workcell
       - INFLUXDB_TOKEN=anvil-workcell
       - DEVICE_NAME
-      - VERSION=1.1.14
+      - VERSION=1.1.16
     extra_hosts:
       - host.docker.internal:host-gateway
     networks:
@@ -145,7 +145,7 @@ services:
       - command: /pre_stop.sh
 
   fluent-bit:
-    image: us-docker.pkg.dev/practical-cider-485717-k0/prod-images/fluent-bit:1.1.14
+    image: us-docker.pkg.dev/practical-cider-485717-k0/prod-images/fluent-bit:1.1.16
     <<: *env-loader
     ports:
       - 24224:24224
@@ -159,7 +159,7 @@ services:
       - .git:/repo-git:ro
     environment:
       - DEVICE_NAME
-      - VERSION=1.1.14
+      - VERSION=1.1.16
       - GRAFANA_LOKI_HOST
       - GRAFANA_LOKI_USER
       - GRAFANA_LOKI_API_KEY

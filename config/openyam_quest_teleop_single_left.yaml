@@ -1,4 +1,4 @@
-# OpenYAM followers Quest VR teleop
+# OpenYAM: teleoperate a single follower arm with the left Quest controller
 
 arm_type: openyam
 control_mode: follower_arms_forward_position_control
@@ -8,10 +8,15 @@ arms:
     can_interface_name: follower_l
     vr_controller: left
     torque_scaling: [1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0]
-    home_positions: [0.0, 0.873, 0.873, -0.698, 0.0, 0.0, 0.044]
+    home_positions: [
+      0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
+      0.0, 0.437, 0.437, -0.349, 0.0, 0.0, 0.022,
+      0.0, 0.55, 0.573, 0.2, 0.0, 0.0, 0.044]
     homing_kp: [10.0, 10.0, 10.0, 5.0, 5.0, 5.0, 5.0]
     homing_kd: [1.0, 1.0, 1.0, 0.5, 0.5, 0.5, 0.1]
-    teleop_kp: [60.0, 60.0, 60.0, 30.0, 12.0, 12.0, 0.1]
-    teleop_kd: [2.0, 2.0, 2.0, 1.0, 0.2, 0.2, 0.04]
+    teleop_kp: [40.0, 65.0, 65.0, 25.0, 12.0, 12.0, 0.1]
+    teleop_kd: [3.0, 4.5, 4.5, 0.7, 0.2, 0.2, 0.04]
     gripper_feedforward_torque: 0.8
     gripper_error_threshold: 0.003
+    velocity_limit_approach: 1
+    velocity_limit_throttle: 8.0

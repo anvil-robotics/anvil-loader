@@ -1,4 +1,4 @@
-# OpenArm leaders-only with gravity compensation
+# OpenArm: leader arms only
 
 arm_type: openarm
 control_mode: leader_follower_arms_teleop
@@ -7,7 +7,10 @@ arms:
   leader_l:
     can_interface_name: leader_l
     torque_scaling: [0.9, 0.9, 0.8, 1.0, 0.8, 0.8, 0.8, 1.0]
-    home_positions: [0.8, 0.0, 0.0, 1.6, 0.0, 0.0, -0.5, 0.0]
+    home_positions: [
+      0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
+      0.4, 0.0, 0.0, 0.8, 0.0, 0.0, -0.25, 0.0,
+      0.8, 0.0, 0.0, 1.6, 0.0, 0.0, -0.5, 0.0]
     homing_kp: [20.0, 20.0, 20.0, 20.0, 5.0, 5.0, 5.0, 5.0]
     homing_kd: [2.75, 2.5, 0.7, 0.4, 0.7, 0.6, 0.5, 0.1]
     teleop_kp: [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
@@ -15,7 +18,10 @@ arms:
   leader_r:
     can_interface_name: leader_r
     torque_scaling: [0.9, 0.9, 0.8, 1.0, 0.8, 0.8, 0.8, 1.0]
-    home_positions: [-0.8, 0.0, 0.0, 1.6, 0.0, 0.0, 0.5, 0.0]
+    home_positions: [
+      0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
+      -0.4, 0.0, 0.0, 0.8, 0.0, 0.0, 0.25, 0.0,
+      -0.8, 0.0, 0.0, 1.6, 0.0, 0.0, 0.5, 0.0]
     homing_kp: [20.0, 20.0, 20.0, 20.0, 5.0, 5.0, 5.0, 5.0]
     homing_kd: [2.75, 2.5, 0.7, 0.4, 0.7, 0.6, 0.5, 0.1]
     teleop_kp: [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]

@@ -1,12 +1,11 @@
-# OpenYAM: teleoperate a pair of follower arms with Quest controllers
+# OpenYAM leader-follower teleop (single right pair)
 
 arm_type: openyam
-control_mode: follower_arms_forward_position_control
+control_mode: leader_follower_arms_teleop
 
 arms:
-  follower_l:
-    can_interface_name: follower_l
-    vr_controller: left
+  leader_r:
+    can_interface_name: leader_r
     torque_scaling: [1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0]
     home_positions: [
       0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
@@ -14,14 +13,10 @@ arms:
       0.0, 0.55, 0.573, 0.2, 0.0, 0.0, 0.044]
     homing_kp: [10.0, 10.0, 10.0, 5.0, 5.0, 5.0, 5.0]
     homing_kd: [1.0, 1.0, 1.0, 0.5, 0.5, 0.5, 0.1]
-    teleop_kp: [40.0, 65.0, 65.0, 25.0, 12.0, 12.0, 0.1]
-    teleop_kd: [3.0, 4.5, 4.5, 0.7, 0.2, 0.2, 0.04]
-    gripper_feedforward_torque: 0.8
-    gripper_error_threshold: 0.003
-    velocity_limit_approach: 1
+    teleop_kp: [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
+    teleop_kd: [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
   follower_r:
     can_interface_name: follower_r
-    vr_controller: right
     torque_scaling: [1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0]
     home_positions: [
       0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
@@ -29,8 +24,7 @@ arms:
       0.0, 0.55, 0.573, 0.2, 0.0, 0.0, 0.044]
     homing_kp: [10.0, 10.0, 10.0, 5.0, 5.0, 5.0, 5.0]
     homing_kd: [1.0, 1.0, 1.0, 0.5, 0.5, 0.5, 0.1]
-    teleop_kp: [40.0, 65.0, 65.0, 25.0, 12.0, 12.0, 0.1]
-    teleop_kd: [3.0, 4.5, 4.5, 0.7, 0.2, 0.2, 0.04]
+    teleop_kp: [120.0, 120.0, 120.0, 25.0, 12.0, 12.0, 0.1]
+    teleop_kd: [3.0, 3.0, 3.0, 0.7, 0.2, 0.2, 0.04]
     gripper_feedforward_torque: 0.8
-    gripper_error_threshold: 0.003
-    velocity_limit_approach: 1
+    gripper_error_threshold: 0.005

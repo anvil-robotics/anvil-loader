@@ -1,0 +1,28 @@
+# OpenYAM: leader arms only
+
+arm_type: openyam
+control_mode: leader_follower_arms_teleop
+
+arms:
+  leader_l:
+    can_interface_name: leader_l
+    torque_scaling: [1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0]
+    home_positions: [
+      0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
+      0.0, 0.437, 0.437, -0.349, 0.0, 0.0, 0.022,
+      0.0, 0.55, 0.573, 0.2, 0.0, 0.0, 0.044]
+    homing_kp: [10.0, 10.0, 10.0, 5.0, 5.0, 5.0, 5.0]
+    homing_kd: [1.0, 1.0, 1.0, 0.5, 0.5, 0.5, 0.1]
+    teleop_kp: [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
+    teleop_kd: [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
+  leader_r:
+    can_interface_name: leader_r
+    torque_scaling: [1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0]
+    home_positions: [
+      0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
+      0.0, 0.437, 0.437, -0.349, 0.0, 0.0, 0.022,
+      0.0, 0.55, 0.573, 0.2, 0.0, 0.0, 0.044]
+    homing_kp: [10.0, 10.0, 10.0, 5.0, 5.0, 5.0, 5.0]
+    homing_kd: [1.0, 1.0, 1.0, 0.5, 0.5, 0.5, 0.1]
+    teleop_kp: [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
+    teleop_kd: [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]

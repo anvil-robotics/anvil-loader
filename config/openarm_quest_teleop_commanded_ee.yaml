@@ -3,6 +3,7 @@
 arm_type: openarm
 control_mode: follower_arms_forward_position_control
 commanded_ee: true
+homing_velocity: 0.42
 
 arms:
   follower_l:

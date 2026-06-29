@@ -13,7 +13,7 @@ x-logging: &logging
 
 services:
   ros2:
-    image: us-docker.pkg.dev/practical-cider-485717-k0/prod-images/ros2:${VERSION:-1.1.19}
+    image: us-docker.pkg.dev/practical-cider-485717-k0/prod-images/ros2:${VERSION:-1.2.3}
     <<: [*env-loader, *logging]
     platform: linux/amd64
     environment:
@@ -21,27 +21,24 @@ services:
       - INFLUXDB_ORG=anvil
       - INFLUXDB_BUCKET=workcell
       - INFLUXDB_TOKEN=anvil-workcell
-      - WEBAPP_URL=http://127.0.0.1:3000
       - DEVICE_NAME
-      - VERSION=${VERSION:-1.1.19}
+      - VERSION=${VERSION:-1.2.3}
     volumes:
       - ./config:/config
       - ./data:/data
+      - robot-meshes:/robot-meshes
       - /etc/machine-id:/etc/machine-id:ro
       - /etc/anvil-os-version:/etc/anvil-os-version:ro
       - /etc/anvil-os-builder-commit:/etc/anvil-os-builder-commit:ro
       - .git:/repo-git:ro
       - ./.android:/root/.android
       - /run/cameras:/run/cameras:ro
+      # Live USB bus so udev hotplug nodes propagate into the container
+      - /dev/bus/usb:/dev/bus/usb:rshared
     tmpfs:
       - /anvil-tmp:size=5G
     privileged: true
     network_mode: host
-    depends_on:
-      fluent-bit:
-        condition: service_healthy
-      influxdb:
-        condition: service_started
     extra_hosts:
       - "host.docker.internal:host-gateway"
     restart: unless-stopped
@@ -53,26 +50,26 @@ services:
     stop_grace_period: 45s
 
   webapps:
-    image: us-docker.pkg.dev/practical-cider-485717-k0/prod-images/webapps:${VERSION:-1.1.19}
+    image: us-docker.pkg.dev/practical-cider-485717-k0/prod-images/webapps:${VERSION:-1.2.3}
     <<: [*env-loader, *logging]
     ports:
       - 3000:3000
     environment:
-      - VERSION=${VERSION:-1.1.19}
+      - VERSION=${VERSION:-1.2.3}
       - NODE_ENV=production
       - DATA_DIR=/data
       - MIGRATIONS_FOLDER=/app/migrations
       - ROS_WS_ENDPOINT=ws://host.docker.internal:9090
+      - MESH_DIR=/meshes
     volumes:
       - ./data:/data
+      - robot-meshes:/meshes:ro
       - /etc/machine-id:/etc/machine-id:ro
     extra_hosts:
       - "host.docker.internal:host-gateway"
     networks:
       - workcell-network
     depends_on:
-      fluent-bit:
-        condition: service_healthy
       ros2:
         condition: service_started
     restart: unless-stopped
@@ -82,7 +79,7 @@ services:
       - command: /pre_stop.sh
 
   influxdb:
-    image: us-docker.pkg.dev/practical-cider-485717-k0/prod-images/influxdb:${VERSION:-1.1.19}
+    image: us-docker.pkg.dev/practical-cider-485717-k0/prod-images/influxdb:${VERSION:-1.2.3}
     <<: *logging
     user: "0:0"
     ports:
@@ -107,7 +104,7 @@ services:
       - command: /pre_stop.sh
 
   telegraf:
-    image: us-docker.pkg.dev/practical-cider-485717-k0/prod-images/telegraf:${VERSION:-1.1.19}
+    image: us-docker.pkg.dev/practical-cider-485717-k0/prod-images/telegraf:${VERSION:-1.2.3}
     <<: [*env-loader, *logging]
     user: telegraf:444
     privileged: true
@@ -129,7 +126,7 @@ services:
       - INFLUXDB_BUCKET=workcell
       - INFLUXDB_TOKEN=anvil-workcell
       - DEVICE_NAME
-      - VERSION=${VERSION:-1.1.19}
+      - VERSION=${VERSION:-1.2.3}
     extra_hosts:
       - host.docker.internal:host-gateway
     networks:
@@ -146,7 +143,7 @@ services:
       - command: /pre_stop.sh
 
   fluent-bit:
-    image: us-docker.pkg.dev/practical-cider-485717-k0/prod-images/fluent-bit:${VERSION:-1.1.19}
+    image: us-docker.pkg.dev/practical-cider-485717-k0/prod-images/fluent-bit:${VERSION:-1.2.3}
     <<: *env-loader
     ports:
       - 24224:24224
@@ -160,7 +157,7 @@ services:
       - .git:/repo-git:ro
     environment:
       - DEVICE_NAME
-      - VERSION=${VERSION:-1.1.19}
+      - VERSION=${VERSION:-1.2.3}
       - GRAFANA_LOKI_HOST
       - GRAFANA_LOKI_USER
       - GRAFANA_LOKI_API_KEY
@@ -184,3 +181,6 @@ services:
 networks:
   workcell-network:
     driver: bridge
+
+volumes:
+  robot-meshes:

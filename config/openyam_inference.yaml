@@ -1,4 +1,4 @@
-# OpenYAM: teleoperate a pair of follower arms with Quest controllers
+# OpenYAM: run a trained policy on a pair of follower arms
 
 arm_type: openyam
 control_mode: follower_arms_forward_position_control
@@ -6,7 +6,6 @@ control_mode: follower_arms_forward_position_control
 arms:
   follower_l:
     can_interface_name: follower_l
-    vr_controller: left
     torque_scaling: [1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0]
     home_positions: [
       0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
@@ -18,10 +17,8 @@ arms:
     teleop_kd: [3.0, 4.5, 4.5, 0.7, 0.2, 0.2, 0.04]
     gripper_feedforward_torque: 0.8
     gripper_error_threshold: 0.003
-    velocity_limit_approach: 1
   follower_r:
     can_interface_name: follower_r
-    vr_controller: right
     torque_scaling: [1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0]
     home_positions: [
       0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
@@ -33,4 +30,3 @@ arms:
     teleop_kd: [3.0, 4.5, 4.5, 0.7, 0.2, 0.2, 0.04]
     gripper_feedforward_torque: 0.8
     gripper_error_threshold: 0.003
-    velocity_limit_approach: 1

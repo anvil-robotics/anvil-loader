@@ -5,7 +5,7 @@ control_mode: follower_arms_forward_position_control
 
 arms:
   follower_l:
-    can_interface_name: follower_l
+    can_interface_name: follower_r
     vr_controller: right
     torque_scaling: [1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0]
     home_positions: [
@@ -19,4 +19,3 @@ arms:
     gripper_feedforward_torque: 0.8
     gripper_error_threshold: 0.003
     velocity_limit_approach: 1
-    velocity_limit_throttle: 8.0

@@ -13,7 +13,7 @@ x-logging: &logging
 
 services:
   ros2:
-    image: us-docker.pkg.dev/practical-cider-485717-k0/prod-images/ros2:${VERSION:-1.2.3}
+    image: us-docker.pkg.dev/practical-cider-485717-k0/prod-images/ros2:${VERSION:-1.2.4}
     <<: [*env-loader, *logging]
     platform: linux/amd64
     environment:
@@ -22,7 +22,7 @@ services:
       - INFLUXDB_BUCKET=workcell
       - INFLUXDB_TOKEN=anvil-workcell
       - DEVICE_NAME
-      - VERSION=${VERSION:-1.2.3}
+      - VERSION=${VERSION:-1.2.4}
     volumes:
       - ./config:/config
       - ./data:/data
@@ -50,12 +50,12 @@ services:
     stop_grace_period: 45s
 
   webapps:
-    image: us-docker.pkg.dev/practical-cider-485717-k0/prod-images/webapps:${VERSION:-1.2.3}
+    image: us-docker.pkg.dev/practical-cider-485717-k0/prod-images/webapps:${VERSION:-1.2.4}
     <<: [*env-loader, *logging]
     ports:
       - 3000:3000
     environment:
-      - VERSION=${VERSION:-1.2.3}
+      - VERSION=${VERSION:-1.2.4}
       - NODE_ENV=production
       - DATA_DIR=/data
       - MIGRATIONS_FOLDER=/app/migrations
@@ -79,7 +79,7 @@ services:
       - command: /pre_stop.sh
 
   influxdb:
-    image: us-docker.pkg.dev/practical-cider-485717-k0/prod-images/influxdb:${VERSION:-1.2.3}
+    image: us-docker.pkg.dev/practical-cider-485717-k0/prod-images/influxdb:${VERSION:-1.2.4}
     <<: *logging
     user: "0:0"
     ports:
@@ -104,7 +104,7 @@ services:
       - command: /pre_stop.sh
 
   telegraf:
-    image: us-docker.pkg.dev/practical-cider-485717-k0/prod-images/telegraf:${VERSION:-1.2.3}
+    image: us-docker.pkg.dev/practical-cider-485717-k0/prod-images/telegraf:${VERSION:-1.2.4}
     <<: [*env-loader, *logging]
     user: telegraf:444
     privileged: true
@@ -126,7 +126,7 @@ services:
       - INFLUXDB_BUCKET=workcell
       - INFLUXDB_TOKEN=anvil-workcell
       - DEVICE_NAME
-      - VERSION=${VERSION:-1.2.3}
+      - VERSION=${VERSION:-1.2.4}
     extra_hosts:
       - host.docker.internal:host-gateway
     networks:
@@ -143,7 +143,7 @@ services:
       - command: /pre_stop.sh
 
   fluent-bit:
-    image: us-docker.pkg.dev/practical-cider-485717-k0/prod-images/fluent-bit:${VERSION:-1.2.3}
+    image: us-docker.pkg.dev/practical-cider-485717-k0/prod-images/fluent-bit:${VERSION:-1.2.4}
     <<: *env-loader
     ports:
       - 24224:24224
@@ -157,7 +157,7 @@ services:
       - .git:/repo-git:ro
     environment:
       - DEVICE_NAME
-      - VERSION=${VERSION:-1.2.3}
+      - VERSION=${VERSION:-1.2.4}
       - GRAFANA_LOKI_HOST
       - GRAFANA_LOKI_USER
       - GRAFANA_LOKI_API_KEY

@@ -1,0 +1,155 @@
+controller_manager:
+  ros__parameters:
+    cpu_affinity: 2
+    follower_l_dynamics:
+      type: control/DynamicsController
+    follower_l_forward_position_controller:
+      type: forward_command_controller/ForwardCommandController
+    follower_l_gains:
+      type: control/GainsController
+    follower_l_jtc:
+      type: joint_trajectory_controller/JointTrajectoryController
+    follower_r_dynamics:
+      type: control/DynamicsController
+    follower_r_forward_position_controller:
+      type: forward_command_controller/ForwardCommandController
+    follower_r_gains:
+      type: control/GainsController
+    follower_r_jtc:
+      type: joint_trajectory_controller/JointTrajectoryController
+    joint_state_broadcaster:
+      type: joint_state_broadcaster/JointStateBroadcaster
+    motor_status_broadcaster:
+      type: control/MotorStatusBroadcaster
+    sentry_controller:
+      type: control/SentryController
+    thread_priority: 80
+    update_rate: 500
+follower_l_dynamics:
+  ros__parameters:
+    end_link: follower_l_hand
+    gripper_error_threshold: 0.003
+    gripper_feedforward_torque: 0.8
+    joints:
+    - follower_l_joint1
+    - follower_l_joint2
+    - follower_l_joint3
+    - follower_l_joint4
+    - follower_l_joint5
+    - follower_l_joint6
+    - follower_l_joint7
+    - follower_l_finger_joint1
+    start_link: follower_body_link0
+    torque_scaling:
+    - 0.9
+    - 0.9
+    - 0.8
+    - 1.0
+    - 0.8
+    - 0.8
+    - 0.8
+    - 1.0
+follower_l_forward_position_controller:
+  ros__parameters:
+    interface_name: position
+    joints:
+    - follower_l_joint1
+    - follower_l_joint2
+    - follower_l_joint3
+    - follower_l_joint4
+    - follower_l_joint5
+    - follower_l_joint6
+    - follower_l_joint7
+    - follower_l_finger_joint1
+follower_l_gains:
+  ros__parameters:
+    joints:
+    - follower_l_joint1
+    - follower_l_joint2
+    - follower_l_joint3
+    - follower_l_joint4
+    - follower_l_joint5
+    - follower_l_joint6
+    - follower_l_joint7
+    - follower_l_finger_joint1
+follower_l_jtc:
+  ros__parameters:
+    command_interfaces:
+    - position
+    joints:
+    - follower_l_joint1
+    - follower_l_joint2
+    - follower_l_joint3
+    - follower_l_joint4
+    - follower_l_joint5
+    - follower_l_joint6
+    - follower_l_joint7
+    - follower_l_finger_joint1
+    state_interfaces:
+    - position
+    - velocity
+follower_r_dynamics:
+  ros__parameters:
+    end_link: follower_r_hand
+    gripper_error_threshold: 0.003
+    gripper_feedforward_torque: 0.8
+    joints:
+    - follower_r_joint1
+    - follower_r_joint2
+    - follower_r_joint3
+    - follower_r_joint4
+    - follower_r_joint5
+    - follower_r_joint6
+    - follower_r_joint7
+    - follower_r_finger_joint1
+    start_link: follower_body_link0
+    torque_scaling:
+    - 0.9
+    - 0.9
+    - 0.8
+    - 1.0
+    - 0.8
+    - 0.8
+    - 0.8
+    - 1.0
+follower_r_forward_position_controller:
+  ros__parameters:
+    interface_name: position
+    joints:
+    - follower_r_joint1
+    - follower_r_joint2
+    - follower_r_joint3
+    - follower_r_joint4
+    - follower_r_joint5
+    - follower_r_joint6
+    - follower_r_joint7
+    - follower_r_finger_joint1
+follower_r_gains:
+  ros__parameters:
+    joints:
+    - follower_r_joint1
+    - follower_r_joint2
+    - follower_r_joint3
+    - follower_r_joint4
+    - follower_r_joint5
+    - follower_r_joint6
+    - follower_r_joint7
+    - follower_r_finger_joint1
+follower_r_jtc:
+  ros__parameters:
+    command_interfaces:
+    - position
+    joints:
+    - follower_r_joint1
+    - follower_r_joint2
+    - follower_r_joint3
+    - follower_r_joint4
+    - follower_r_joint5
+    - follower_r_joint6
+    - follower_r_joint7
+    - follower_r_finger_joint1
+    state_interfaces:
+    - position
+    - velocity
+motor_status_broadcaster:
+  ros__parameters: {}

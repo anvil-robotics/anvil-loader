@@ -1,0 +1,56 @@
+# Stage 1: extract PXREA SDK from the xr-pc-service deb (Ubuntu 22.04 .so — ABI-compatible with Noble)
+FROM ubuntu:22.04 AS pxrea-sdk
+# Stub out desktop/icon commands that the deb post-install triggers but are absent in Docker
+RUN for cmd in xdg-icon-resource gtk-update-icon-cache update-mime-database update-desktop-database; do \
+      ln -sf /bin/true /usr/local/bin/$cmd; \
+    done
+ADD https://github.com/XR-Robotics/XRoboToolkit-PC-Service/releases/download/v1.0.0/XRoboToolkit_PC_Service_1.0.0_ubuntu_22.04_amd64.deb /tmp/xr-pc-service.deb
+RUN dpkg -i /tmp/xr-pc-service.deb && rm /tmp/xr-pc-service.deb
+
+# Stage 2: build xr_msgs + picoxr for Python 3.12 / ROS2 Jazzy / Ubuntu 24.04 Noble
+FROM ros:jazzy-ros-base-noble AS xr-builder
+
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    git \
+    python3-colcon-common-extensions \
+    ros-jazzy-rosidl-default-generators \
+    ros-jazzy-std-msgs \
+    ros-jazzy-rmw-cyclonedds-cpp \
+  && rm -rf /var/lib/apt/lists/*
+
+COPY --from=pxrea-sdk /opt/apps/roboticsservice/SDK /opt/apps/roboticsservice/SDK
+
+RUN git clone --depth 1 https://github.com/XR-Robotics/XRoboToolkit-Teleop-ROS.git /tmp/xr-teleop-ros && \
+    mkdir -p /xr_ws/src && \
+    cp -r /tmp/xr-teleop-ros/ros2/xr_msgs /tmp/xr-teleop-ros/ros2/picoxr /xr_ws/src/ && \
+    rm -rf /tmp/xr-teleop-ros && \
+    sed -i '/DOWNLOAD_EXTRACT_TIMESTAMP/d' /xr_ws/src/picoxr/CMakeLists.txt
+
+# Use the same patched CMakeLists as the humble bridge (adds Python bindings via rosidl_default_generators)
+COPY xr_msgs_CMakeLists.txt /xr_ws/src/xr_msgs/CMakeLists.txt
+
+SHELL ["/bin/bash", "-c"]
+
+RUN source /opt/ros/jazzy/setup.bash && \
+    cd /xr_ws && \
+    colcon build --packages-select xr_msgs picoxr
+
+RUN source /opt/ros/jazzy/setup.bash && \
+    source /xr_ws/install/setup.bash && \
+    python3 -c "from xr_msgs.msg import Custom; print('xr_msgs OK')"
+
+# Stage 3: final image — ros2:1.1.16 (Jazzy, Python 3.12) + xr_ws + pico4_teleop_controller
+FROM us-docker.pkg.dev/practical-cider-485717-k0/prod-images/ros2:1.1.16
+
+# xr_ws compiled for Python 3.12 / Jazzy — xr_msgs + picoxr talker
+COPY --from=xr-builder /xr_ws/install /xr_ws/install
+
+# PXREA SDK shared libraries (needed by picoxr talker at runtime)
+COPY --from=pxrea-sdk /opt/apps/roboticsservice/SDK /opt/apps/roboticsservice/SDK
+
+COPY pico4_teleop_controller.py /app/pico4_teleop_controller.py
+COPY entrypoint_pico4teleop.sh  /app/entrypoint.sh
+RUN chmod +x /app/entrypoint.sh
+
+WORKDIR /app
+ENTRYPOINT ["/app/entrypoint.sh"]

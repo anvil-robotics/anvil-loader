@@ -1,0 +1,17 @@
+# Patched CMakeLists for xr_msgs (XRoboToolkit-Teleop-ROS).
+# The upstream file uses rosidl_default_generators only for C++ and omits Python bindings.
+# This replacement adds rosidl_default_generators correctly so that
+# "from xr_msgs.msg import Custom" works in Python 3.12 / ROS2 Jazzy.
+cmake_minimum_required(VERSION 3.8)
+project(xr_msgs)
+find_package(ament_cmake REQUIRED)
+find_package(std_msgs REQUIRED)
+find_package(rosidl_default_generators REQUIRED)
+rosidl_generate_interfaces(${PROJECT_NAME}
+  "msg/Head.msg"
+  "msg/Custom.msg"
+  "msg/Controller.msg"
+  DEPENDENCIES std_msgs
+)
+ament_export_dependencies(rosidl_default_runtime)
+ament_package()

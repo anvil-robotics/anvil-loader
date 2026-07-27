@@ -23,6 +23,9 @@ services:
       - INFLUXDB_TOKEN=anvil-workcell
       - DEVICE_NAME
       - VERSION=${VERSION:-1.2.7}
+      - VR_HEADSET_TYPE=      # prevent recorder from subscribing to /xr_pose via VR_HEADSET_TYPE
+      - AMENT_PREFIX_PATH=/xr_ws_shared/xr_msgs  # expose xr_msgs to recorder + replay_buffer
+      - LD_LIBRARY_PATH=/xr_ws_shared/xr_msgs/lib  # dynamic linker path for xr_msgs .so files
     volumes:
       - ./config:/config
       - ./data:/data
@@ -36,6 +39,8 @@ services:
       - /run/cameras:/run/cameras:ro
       # Live USB bus so udev hotplug nodes propagate into the container
       - /dev/bus/usb:/dev/bus/usb:rshared
+      - ./docker/xr_ws_shared:/xr_ws_shared:ro
+      - ./scripts:/scripts:ro  # record_motion_standalone.py / replay_motion.py
     tmpfs:
       - /anvil-tmp:size=5G
     privileged: true
@@ -68,6 +73,7 @@ services:
       - /etc/machine-id:/etc/machine-id:ro
       - /etc/anvil-os-version:/etc/anvil-os-version:ro
       - /etc/anvil-os-builder-commit:/etc/anvil-os-builder-commit:ro
+      - ./docker/xr-pc-service/webapp-server-patch.js:/app/dist/server.js:ro
     extra_hosts:
       - "host.docker.internal:host-gateway"
     networks:
@@ -177,6 +183,69 @@ services:
       - command: /post_start.sh
     pre_stop:
       - command: /pre_stop.sh
+
+  xr-pc-service:
+    image: us-docker.pkg.dev/practical-cider-485717-k0/prod-images/xr-pc-service:1.1.16
+    build:
+      context: ./docker/xr-pc-service
+      dockerfile: Dockerfile
+    profiles: [pico4]
+    <<: [*env-loader, *logging]
+    network_mode: host
+    volumes:
+      - /etc/machine-id:/etc/machine-id:ro
+    environment:
+      - DEVICE_NAME
+      - VERSION=1.1.16
+      - XRPC_SERVICE_PORT=9100
+    depends_on:
+      fluent-bit:
+        condition: service_healthy
+    restart: unless-stopped
+
+  # One-shot init container: extracts xr_msgs (ROS2 message bindings for /xr_pose)
+  # from the pico4-teleop image into ./docker/xr_ws_shared/ so the ros2 container
+  # can load type support for xr_msgs/msg/Custom. Without this, recorder and
+  # replay_buffer crash when they discover /xr_pose on DDS.
+  xr-ws-init:
+    build:
+      context: ./docker/vr-pico4-bridge
+      dockerfile: Dockerfile.pico4teleop
+    profiles: [pico4]
+    entrypoint: bash
+    command: -c "cp -rn /xr_ws/install/xr_msgs /out/ 2>/dev/null; echo 'xr_msgs ready'"
+    volumes:
+      - ./docker/xr_ws_shared:/out
+    restart: "no"
+
+  pico4-teleop:
+    build:
+      context: ./docker/vr-pico4-bridge
+      dockerfile: Dockerfile.pico4teleop
+    profiles: [pico4]
+    env_file:
+      - .env.config
+    network_mode: host
+    environment:
+      # explicit values that differ from .env.config defaults or aren't in it
+      - VERSION=1.1.16
+      - WEBAPP_URL=http://127.0.0.1:3000
+      - INFLUXDB_URL=http://127.0.0.1:8086
+      - INFLUXDB_ORG=anvil
+      - INFLUXDB_BUCKET=workcell
+      - INFLUXDB_TOKEN=anvil-workcell
+    volumes:
+      - ./config:/config:ro                           # robot_description.urdf + arm config YAMLs
+      - /etc/machine-id:/etc/machine-id:ro            # DEVICE_ID source (read by entrypoint)
+      - /etc/anvil-os-version:/etc/anvil-os-version:ro
+      - /etc/anvil-os-builder-commit:/etc/anvil-os-builder-commit:ro
+      - .git:/repo-git:ro                             # LOADER_REPO_VERSION (git HEAD hash)
+    depends_on:
+      ros2:
+        condition: service_started
+      xr-pc-service:
+        condition: service_started
+    restart: unless-stopped
 
 networks:
   workcell-network:

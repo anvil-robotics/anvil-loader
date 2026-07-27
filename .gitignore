@@ -1,8 +1,5 @@
 data/*
 
-config/generated_controllers.yaml
-config/robot_description.urdf
-
 .env
 .env.provision
 !.env.config

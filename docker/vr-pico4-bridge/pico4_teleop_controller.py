@@ -58,7 +58,13 @@ _TRACKING_LOSS_FRAMES = 3
 
 
 def _get_default_session_id(base_url: str) -> int | None:
-    """Return the current default session ID from the webapp, or None if unset."""
+    """Return the current default session ID, or None if unset.
+
+    Reads from the session-bridge sidecar (docker/session-bridge), not webapps
+    directly — webapps only exposes this via a tRPC subscription (session.default.subscribe),
+    which needs a persistent WebSocket, not a one-shot HTTP GET. The sidecar holds that
+    WS subscription open and re-exposes the latest value as plain REST.
+    """
     try:
         url = f"{base_url.rstrip('/')}/api/default-session"
         with _urllib_request.urlopen(url, timeout=2) as resp:
@@ -222,6 +228,16 @@ class Pico4TeleopController(Node):
             .string_value
         )
         self.get_logger().info(f"Using webapp URL: {webapp_url}")
+
+        self.declare_parameter(
+            "session_bridge_url", os.environ.get("SESSION_BRIDGE_URL", "http://127.0.0.1:9300")
+        )
+        self.session_bridge_url = (
+            self.get_parameter("session_bridge_url")
+            .get_parameter_value()
+            .string_value
+        )
+        self.get_logger().info(f"Using session bridge URL: {self.session_bridge_url}")
 
         # PyBullet robot model identifiers, populated by populate_joint_info().
         self.robot_id = None
@@ -582,7 +598,7 @@ class Pico4TeleopController(Node):
                 self._is_recording = True
                 self._last_recording_button_time = now
                 def _start():
-                    session_id = _get_default_session_id(self.webapp._base_url)
+                    session_id = _get_default_session_id(self.session_bridge_url)
                     if session_id is None:
                         self.get_logger().warn(
                             "A button pressed but no session is selected — "

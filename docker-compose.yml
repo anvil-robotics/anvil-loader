@@ -73,7 +73,6 @@ services:
       - /etc/machine-id:/etc/machine-id:ro
       - /etc/anvil-os-version:/etc/anvil-os-version:ro
       - /etc/anvil-os-builder-commit:/etc/anvil-os-builder-commit:ro
-      - ./docker/xr-pc-service/webapp-server-patch.js:/app/dist/server.js:ro
     extra_hosts:
       - "host.docker.internal:host-gateway"
     networks:
@@ -220,6 +219,28 @@ services:
       - ./docker/xr_ws_shared:/out
     restart: "no"
 
+  # Subscribes to webapps' tRPC session.default.subscribe over WebSocket and
+  # re-exposes the current value as a plain REST GET at /api/default-session.
+  # webapps' real server.js only exposes this via a tRPC subscription (no plain
+  # query/REST route), which needs a persistent WS connection — this sidecar holds
+  # that connection so pico4_teleop_controller.py can keep using a simple HTTP GET.
+  # Replaces docker/xr-pc-service/webapp-server-patch.js's old /api/default-session
+  # route, which required bind-mounting a stale full-server-bundle replacement over
+  # webapps' server.js that broke CSS (its embedded HTML referenced a newer frontend
+  # build's asset hashes than what's actually in the webapps image).
+  session-bridge:
+    build:
+      context: ./docker/session-bridge
+    profiles: [pico4]
+    network_mode: host
+    environment:
+      - WEBAPP_TRPC_WS_URL=ws://127.0.0.1:3000/trpc
+      - SESSION_BRIDGE_PORT=9300
+    depends_on:
+      webapps:
+        condition: service_started
+    restart: unless-stopped
+
   pico4-teleop:
     build:
       context: ./docker/vr-pico4-bridge
@@ -234,12 +255,13 @@ services:
       # explicit values that differ from .env.config defaults or aren't in it
       - VERSION=${VERSION:-1.2.7}
       - WEBAPP_URL=http://127.0.0.1:3000
+      - SESSION_BRIDGE_URL=http://127.0.0.1:9300
       - INFLUXDB_URL=http://127.0.0.1:8086
       - INFLUXDB_ORG=anvil
       - INFLUXDB_BUCKET=workcell
       - INFLUXDB_TOKEN=anvil-workcell
     volumes:
-      - ./config:/config:ro                           # robot_description.urdf + arm config YAMLs
+      - ./config:/config:ro                           # robot_description_pico4.urdf + arm config YAMLs
       - /etc/machine-id:/etc/machine-id:ro            # DEVICE_ID source (read by entrypoint)
       - /etc/anvil-os-version:/etc/anvil-os-version:ro
       - /etc/anvil-os-builder-commit:/etc/anvil-os-builder-commit:ro
@@ -248,6 +270,8 @@ services:
       ros2:
         condition: service_started
       xr-pc-service:
+        condition: service_started
+      session-bridge:
         condition: service_started
     restart: unless-stopped
 

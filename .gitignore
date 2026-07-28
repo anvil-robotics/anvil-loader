@@ -5,3 +5,10 @@ data/*
 !.env.config
 
 .android/*
+
+# Per-box robot description — content differs per workcell, never shared via git.
+# entrypoint_pico4teleop.sh symlinks this in from a per-box-provided real file at
+# container start; each anvil box keeps its own copy on disk outside git tracking.
+config/robot_description_pico4.urdf
+config/robot_description.urdf
+config/generated_controllers.yaml

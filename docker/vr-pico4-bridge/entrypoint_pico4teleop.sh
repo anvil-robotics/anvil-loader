@@ -43,8 +43,14 @@ export ANVIL_OS_BUILDER_COMMIT=$(tr -d '[:space:]' < /etc/anvil-os-builder-commi
 # PyBullet resolves package:// URIs by searching parent dirs of the URDF.
 # Loading from /workspace/ros2/src/quest_teleop/config/ means two levels up
 # is /workspace/ros2/src/ where openarm_description/meshes/ lives.
+# Filename is robot_description_pico4.urdf (not robot_description.urdf) because
+# the ros2 image's anvil_robot_manager unconditionally deletes /config/robot_description.urdf
+# and /config/generated_controllers.yaml on every startup ("backward compat: older
+# versions generated these files into /config at launch") — since /config is a
+# read-write bind mount shared with the ros2 container, that wipes the real file
+# on the host every time ros2 restarts. Renaming sidesteps the vendor cleanup entirely.
 mkdir -p /workspace/ros2/src/quest_teleop/config
-ln -sf /config/robot_description.urdf /workspace/ros2/src/quest_teleop/config/robot_description.urdf 2>/dev/null || true
+ln -sf /config/robot_description_pico4.urdf /workspace/ros2/src/quest_teleop/config/robot_description.urdf 2>/dev/null || true
 export ROBOT_DESCRIPTION_URDF=/workspace/ros2/src/quest_teleop/config/robot_description.urdf
 
 # picoxr talker: publishes /xr_pose from Pico4 XRoboToolkit stream

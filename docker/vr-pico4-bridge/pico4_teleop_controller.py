@@ -32,17 +32,14 @@ from amplitude import Amplitude
 import pybullet as p
 import rclpy
 import tf2_ros
-from action_msgs.msg import GoalStatus
 from geometry_msgs.msg import PoseStamped
-from rclpy.action import ActionClient
 from rclpy.node import Node
 from rclpy.qos import DurabilityPolicy, QoSProfile, ReliabilityPolicy
 from sensor_msgs.msg import JointState
 from std_msgs.msg import Float64MultiArray
 
-from anvil_msgs.action import Reset
 from anvil_msgs.msg import CommandedEEPose, ControlsOwner, RecordingStatus
-from anvil_msgs.srv import SwitchControlsOwner
+from anvil_msgs.srv import ResetArms, SwitchControlsOwner
 from control.workcell_config import ArmsControlConfig, load_arms_control_config
 from anvil_metrics import InfluxDbWriter
 from quest_teleop.absolute_control_modality import AbsoluteControlModality
@@ -322,7 +319,7 @@ class Pico4TeleopController(Node):
         self.create_subscription(Custom, "xr_pose", self._on_xr_pose, _be)
         self.get_logger().info("Subscribed to /xr_pose — waiting for Pico4 controller data")
 
-        self._reset_action_client = ActionClient(self, Reset, "/arms_resetter/reset")
+        self._reset_client = self.create_client(ResetArms, "/arms_resetter/reset")
 
         self._current_controls_owner = ""
         self._switch_owner_client = self.create_client(
@@ -615,15 +612,15 @@ class Pico4TeleopController(Node):
             self.get_logger().info("Y button pressed — sending rehome request")
             self._send_rehome_request()
 
-        active_poses_left, active_poses_right = (
-            self.control_modality.get_target_joint_positions(
-                data,
-                left_commanded_ee=self.latest_left_commanded_ee,
-                right_commanded_ee=self.latest_right_commanded_ee,
-                current_left_gripper=self.current_left_gripper,
-                current_right_gripper=self.current_right_gripper,
-            )
+        teleop_command = self.control_modality.get_target_joint_positions(
+            data,
+            left_commanded_ee=self.latest_left_commanded_ee,
+            right_commanded_ee=self.latest_right_commanded_ee,
+            current_left_gripper=self.current_left_gripper,
+            current_right_gripper=self.current_right_gripper,
         )
+        active_poses_left = teleop_command.left_poses
+        active_poses_right = teleop_command.right_poses
 
         now = time.time()
         dt = now - self.last_time
@@ -671,7 +668,7 @@ class Pico4TeleopController(Node):
         self.get_logger().info("Running cleanup...")
         if self._teleop_timer:
             self._teleop_timer.cancel()
-        self._reset_action_client.destroy()
+        self.destroy_client(self._reset_client)
         try:
             p.disconnect()
         except Exception:
@@ -679,53 +676,33 @@ class Pico4TeleopController(Node):
         self.get_logger().info("Cleanup complete.")
 
     def _send_rehome_request(self):
-        """Send a rehome goal to the ``/arms_resetter/reset`` action server.
+        """Send a rehome request to the ``/arms_resetter/reset`` service.
 
-        Uses ``final_pose_only=True`` so the arms move only to the final rest
-        pose without executing a full calibration sequence.  The 7.5-second
-        duration override gives the arms enough time to reach the rest pose
-        smoothly regardless of their current position.
+        Calls with ``dehome=False`` (the request default), which the server
+        resolves to a final-pose-only rehome with its own 7.5s duration
+        override — matching the old action call's parameters exactly.
 
-        Does nothing if the action server is not yet available, logging a
-        warning instead of blocking the teleop loop.
+        Does nothing if the service is not yet available, logging a warning
+        instead of blocking the teleop loop.
         """
-        if not self._reset_action_client.wait_for_server(timeout_sec=0.0):
-            self.get_logger().warn("Arms resetter action server not available")
+        if not self._reset_client.service_is_ready():
+            self.get_logger().warn("Arms resetter service not available")
             return
-        goal = Reset.Goal()
-        goal.final_pose_only = True
-        goal.homing_duration_override = 7.5
-        future = self._reset_action_client.send_goal_async(goal)
-        future.add_done_callback(self._rehome_goal_response_callback)
+        future = self._reset_client.call_async(ResetArms.Request(dehome=False))
+        future.add_done_callback(self._rehome_response_callback)
 
-    def _rehome_goal_response_callback(self, future):
-        """Handle the goal-acceptance response from the arms resetter.
-
-        Chains a result callback if the goal was accepted; logs a warning if
-        the server rejected it.
+    def _rehome_response_callback(self, future):
+        """Handle the response to a rehome service request.
 
         Args:
-            future: Completed future whose result is the action goal handle.
+            future: Completed future whose result is the ``ResetArms``
+                response (``accepted``, ``message``).
         """
-        goal_handle = future.result()
-        if not goal_handle.accepted:
-            self.get_logger().warn("Rehome goal rejected")
-            return
-        self.get_logger().info("Rehome goal accepted")
-        result_future = goal_handle.get_result_async()
-        result_future.add_done_callback(self._rehome_result_callback)
-
-    def _rehome_result_callback(self, future):
-        """Handle the final result from the arms resetter action.
-
-        Args:
-            future: Completed future whose result carries the action status.
-        """
-        result = future.result()
-        if result.status == GoalStatus.STATUS_SUCCEEDED:
-            self.get_logger().info("Rehome completed successfully")
+        response = future.result()
+        if response.accepted:
+            self.get_logger().info("Rehome request accepted")
         else:
-            self.get_logger().warn(f"Rehome finished with status: {result.status}")
+            self.get_logger().warn(f"Rehome request rejected: {response.message}")
 
     def _on_left_commanded_ee(self, msg: CommandedEEPose):
         """Cache the latest commanded end-effector pose for the left arm.

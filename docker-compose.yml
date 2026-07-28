@@ -211,6 +211,8 @@ services:
     build:
       context: ./docker/vr-pico4-bridge
       dockerfile: Dockerfile.pico4teleop
+      args:
+        ROS2_VERSION: ${VERSION:-1.2.7}
     profiles: [pico4]
     entrypoint: bash
     command: -c "cp -rn /xr_ws/install/xr_msgs /out/ 2>/dev/null; echo 'xr_msgs ready'"
@@ -222,13 +224,15 @@ services:
     build:
       context: ./docker/vr-pico4-bridge
       dockerfile: Dockerfile.pico4teleop
+      args:
+        ROS2_VERSION: ${VERSION:-1.2.7}
     profiles: [pico4]
     env_file:
       - .env.config
     network_mode: host
     environment:
       # explicit values that differ from .env.config defaults or aren't in it
-      - VERSION=1.1.16
+      - VERSION=${VERSION:-1.2.7}
       - WEBAPP_URL=http://127.0.0.1:3000
       - INFLUXDB_URL=http://127.0.0.1:8086
       - INFLUXDB_ORG=anvil

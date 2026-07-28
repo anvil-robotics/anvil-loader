@@ -6,7 +6,19 @@ source /opt/ros/jazzy/setup.bash
 source /workspace/install/setup.bash
 source /xr_ws/install/setup.bash
 
-export RMW_IMPLEMENTATION=rmw_cyclonedds_cpp
+# Match the ros2 container's RMW/CycloneDDS config (see its /entrypoint.sh) instead of
+# hardcoding something different here. This host has 6+ network interfaces (WiFi,
+# Tailscale, several docker bridges); without an explicit single NetworkInterface,
+# FastDDS/CycloneDDS announce locators on all of them, and ROS2 service calls (e.g.
+# /arms_resetter/reset) silently hang across containers even though plain pub/sub
+# still gets through — pinning both containers to the same interface (CYCLONEDDS_IFACE,
+# normally 'lo' since ros2 and pico4-teleop always run on this same host) fixes it.
+if [ "${ENABLE_CYCLONEDDS}" = "true" ]; then
+    _iface=""; [ -n "${CYCLONEDDS_IFACE}" ] && \
+        _iface="<NetworkInterface name=\"${CYCLONEDDS_IFACE}\" />"
+    export RMW_IMPLEMENTATION=rmw_cyclonedds_cpp
+    export CYCLONEDDS_URI="<CycloneDDS><Domain id='any'><General><Interfaces>${_iface}</Interfaces></General><Discovery><Peers><Peer address='${CYCLONEDDS_PEER_IP}'/></Peers></Discovery></Domain></CycloneDDS>"
+fi
 
 # Mirror the env var setup from the ros2 container entrypoint.sh so InfluxDbWriter initialises correctly
 export DEVICE_ID=$(tr -d '[:space:]' < /etc/machine-id 2>/dev/null || echo "unknown")
@@ -34,8 +46,6 @@ export ANVIL_OS_BUILDER_COMMIT=$(tr -d '[:space:]' < /etc/anvil-os-builder-commi
 mkdir -p /workspace/ros2/src/quest_teleop/config
 ln -sf /config/robot_description.urdf /workspace/ros2/src/quest_teleop/config/robot_description.urdf 2>/dev/null || true
 export ROBOT_DESCRIPTION_URDF=/workspace/ros2/src/quest_teleop/config/robot_description.urdf
-# host-network peer discovery — both ros2 and pico4-teleop containers are on the host network
-export CYCLONEDDS_URI="<CycloneDDS><Domain id='any'><Discovery><Peers><Peer address='127.0.0.1'/></Peers></Discovery></Domain></CycloneDDS>"
 
 # picoxr talker: publishes /xr_pose from Pico4 XRoboToolkit stream
 restart_talker() {

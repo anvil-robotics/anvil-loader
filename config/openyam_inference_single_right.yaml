@@ -4,7 +4,7 @@ arm_type: openyam
 control_mode: follower_arms_forward_position_control
 
 arms:
-  follower_l:
+  follower_r:
     can_interface_name: follower_r
     torque_scaling: [1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0]
     home_positions: [
